@@ -1,50 +1,7 @@
-import { IPromiseBasedObservable } from "mobx-utils";
 import { Page, Element } from "../Document";
-import { AltTextId, AltTextInfo } from "./AltTextRule";
-import {
-  InsufficientTextContrastId,
-  InsufficientTextContrastInfo,
-} from "./ContrastRule";
-import {
-  ImageProcessingDangerZoneConfig,
-  ImageProcessingDangerZoneId,
-  ImageProcessingDangerZoneInfo,
-} from "./DangerZoneRule";
-
-type BaseDiagnostic = {
-  id: string;
-  lintable: Lintable;
-};
-export type SyncDiagnostic<R extends SyncRuleId = SyncRuleId> =
-  BaseDiagnostic & {
-    type: "sync";
-    fix?(): void;
-  } & ({ rule: Exclude<R, AltTextId> } | ({ rule: AltTextId } & AltTextInfo));
-
-export type AsyncDiagnostic<R extends AsyncRuleId = AsyncRuleId> =
-  BaseDiagnostic & {
-    type: "async";
-    hasViolation: boolean | "pending";
-    fix?(): void;
-  } & (
-      | {
-          rule: Exclude<
-            R,
-            ImageProcessingDangerZoneId | InsufficientTextContrastId
-          >;
-        }
-      | ({
-          rule: ImageProcessingDangerZoneId;
-        } & Partial<ImageProcessingDangerZoneInfo>)
-      | ({
-          rule: InsufficientTextContrastId;
-        } & Partial<InsufficientTextContrastInfo>)
-    );
-export type Diagnostic<R extends RuleId = RuleId> = R extends SyncRuleId
-  ? SyncDiagnostic<R>
-  : R extends AsyncRuleId
-  ? AsyncDiagnostic<R>
-  : never;
+import { AltTextConfig } from "./AltTextRule";
+import { InsufficientTextContrastConfig } from "./ContrastRule";
+import { ImageProcessingDangerZoneConfig } from "./DangerZoneRule";
 
 export type LintablePage = {
   type: "page";
@@ -59,18 +16,60 @@ export type LintableElement = {
 
 export type Lintable = LintablePage | LintableElement;
 
+type SyncRuleConfig = AltTextConfig;
+type AsyncRuleConfig =
+  | InsufficientTextContrastConfig
+  | ImageProcessingDangerZoneConfig;
+export type RuleConfig = AsyncRuleConfig | SyncRuleConfig;
+
 export type RuleId = RuleConfig["rule"];
 export type AsyncRuleId = AsyncRuleConfig["rule"];
 export type SyncRuleId = SyncRuleConfig["rule"];
 
-type AsyncRuleConfig =
-  | { rule: InsufficientTextContrastId }
-  | {
-      rule: ImageProcessingDangerZoneId;
-      config: ImageProcessingDangerZoneConfig;
-    };
-type SyncRuleConfig = { rule: AltTextId };
-export type RuleConfig = AsyncRuleConfig | SyncRuleConfig;
+type BaseDiagnostic = {
+  id: string;
+  lintable: Lintable;
+  fix?(): void;
+};
+
+/**
+ * Essentially the old Diagnostic type
+ */
+export type SyncDiagnostic<
+  R extends SyncRuleId = SyncRuleId,
+  C extends SyncRuleConfig = SyncRuleConfig extends infer A
+    ? A extends { rule: R }
+      ? SyncRuleConfig
+      : never
+    : never
+> = BaseDiagnostic & {
+  type: "sync";
+  rule: R;
+} & C["info"];
+
+/**
+ * New Diagnostic type that can be Pending
+ * Although `hasViolation` can be false, Design Linter should not expose
+ * those Diagnostics to consumers
+ */
+export type AsyncDiagnostic<
+  R extends AsyncRuleId = AsyncRuleId,
+  C extends AsyncRuleConfig = AsyncRuleConfig extends infer A
+    ? A extends { rule: R }
+      ? AsyncRuleConfig
+      : never
+    : never
+> = BaseDiagnostic & {
+  type: "async";
+  rule: R;
+  hasViolation: boolean | "pending";
+} & C["info"];
+
+export type Diagnostic<R extends RuleId = RuleId> = R extends SyncRuleId
+  ? SyncDiagnostic<R>
+  : R extends AsyncRuleId
+  ? AsyncDiagnostic<R>
+  : never;
 
 export interface Rule<R extends RuleId> {
   init?(): void;

@@ -6,8 +6,14 @@ export type ImageProcessingDangerZoneInfo = {
   components: {}[];
 };
 
-export type ImageProcessingDangerZoneConfig = {
+export type ImageProcessingDangerZoneProps = {
   dangerZoneSvgPath: string;
+};
+
+export type ImageProcessingDangerZoneConfig = {
+  rule: ImageProcessingDangerZoneId;
+  info: ImageProcessingDangerZoneInfo;
+  props: ImageProcessingDangerZoneProps;
 };
 
 export class ImageProcessingDangerZoneRule
