@@ -9,20 +9,27 @@ import { AsyncDiagnostic, AsyncRule, Lintable } from "./Rule";
 
 export type InsufficientTextContrastId = "insufficient_text_contrast";
 
+export type InsufficientTextContrastConfig = {
+  rule: InsufficientTextContrastId;
+  info: InsufficientTextContrastInfo;
+};
+
 export type InsufficientTextContrastInfo = {
   // Colors associated with the issue target, providing them directly as not much extra computing needed.
-  currentTargetColors: readonly number[];
+  currentTargetColors?: readonly number[];
   // Candidates array are not provided directly due to computing them is expansive and
   // the current use case for them uses the candidates from a single linter diagnostic instead of all
   // the diagnostics, so computing candidates on-demand time saves a lot.
-  getCandidates(): number[];
+  getCandidates?(): number[];
   // Apply new color to diagnostic associated target like element or item,
   // common use case is letting users select one color from the given candidates and applying it
   // to get contrast issue fixed.
   updateTargetColor?(newColor: string): void;
 };
 
-class InsufficientTextContrastDiagnostic {
+class InsufficientTextContrastDiagnostic
+  implements AsyncDiagnostic<InsufficientTextContrastId>
+{
   readonly type = "async";
   readonly rule = "insufficient_text_contrast";
   @observable.struct
@@ -70,17 +77,6 @@ class InsufficientTextContrastDiagnostic {
       return "pending";
     }
     return this.fromPromise.value.hasViolation;
-  }
-
-  @computed
-  get state() {
-    if (this.pageTask.state !== "fulfilled") {
-      return this.pageTask.state;
-    }
-    if (this.calculated) {
-      return "fulfilled";
-    }
-    return "pending";
   }
 
   @action

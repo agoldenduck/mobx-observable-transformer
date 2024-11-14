@@ -4,6 +4,10 @@ export type AltTextId = "alt_text";
 export type AltTextInfo = {
   altTextable: {};
 };
+export type AltTextConfig = {
+  rule: AltTextId;
+  info: AltTextInfo;
+};
 
 export class AltTextRule implements Rule<AltTextId> {
   checkFixed(lintable: Lintable) {

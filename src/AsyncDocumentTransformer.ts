@@ -27,6 +27,9 @@ export class AsyncDocumentTransformer {
     this.rules.forEach((rule) => rule.init?.());
   }
 
+  /**
+   * This is a new computed
+   */
   @computed
   get pendingAsyncDiagnostics(): Diagnostic[][] {
     return this.transformedDocument.map(lintNodeToPendingDiagnostics);
@@ -96,6 +99,7 @@ type LintNode = {
 
 /**
  * Find the diagnostics in a node and all its child nodes
+ * This updates as the observable diagnostics resolve
  */
 export function lintNodeToDiagnostics(node: LintNode): Diagnostic[] {
   return flattenLintNode(node).flatMap((n) =>
@@ -104,7 +108,7 @@ export function lintNodeToDiagnostics(node: LintNode): Diagnostic[] {
 }
 
 /**
- * Find the diagnostics in a node and all its child nodes
+ * Find the loading diagnostics in a node and all its child nodes
  */
 export function lintNodeToPendingDiagnostics(node: LintNode): Diagnostic[] {
   return flattenLintNode(node).flatMap((n) =>
