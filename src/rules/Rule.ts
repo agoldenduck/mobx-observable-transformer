@@ -32,6 +32,9 @@ type BaseDiagnostic = {
   fix?(): void;
 };
 
+/**
+ * Essentially the old Diagnostic type
+ */
 export type SyncDiagnostic<
   R extends SyncRuleId = SyncRuleId,
   C extends SyncRuleConfig = SyncRuleConfig extends infer A
@@ -44,6 +47,11 @@ export type SyncDiagnostic<
   rule: R;
 } & C["info"];
 
+/**
+ * New Diagnostic type that can be Pending
+ * Although `hasViolation` can be false, Design Linter should not expose
+ * those Diagnostics to consumers
+ */
 export type AsyncDiagnostic<
   R extends AsyncRuleId = AsyncRuleId,
   C extends AsyncRuleConfig = AsyncRuleConfig extends infer A
