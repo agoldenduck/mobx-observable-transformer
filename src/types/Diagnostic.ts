@@ -1,30 +1,11 @@
-import { Page, Element } from "../Document";
-import { AltTextConfig } from "./AltTextRule";
-import { InsufficientTextContrastConfig } from "./ContrastRule";
-import { ImageProcessingDangerZoneConfig } from "./DangerZoneRule";
-
-export type LintablePage = {
-  type: "page";
-  page: Page;
-};
-
-export type LintableElement = {
-  type: "element";
-  page: Page;
-  element: Element;
-};
-
-export type Lintable = LintablePage | LintableElement;
-
-type SyncRuleConfig = AltTextConfig;
-type AsyncRuleConfig =
-  | InsufficientTextContrastConfig
-  | ImageProcessingDangerZoneConfig;
-export type RuleConfig = AsyncRuleConfig | SyncRuleConfig;
-
-export type RuleId = RuleConfig["rule"];
-export type AsyncRuleId = AsyncRuleConfig["rule"];
-export type SyncRuleId = SyncRuleConfig["rule"];
+import { Lintable } from "./Lintable";
+import {
+  SyncRuleId,
+  AsyncRuleId,
+  RuleId,
+  AsyncRuleConfig,
+  SyncRuleConfig,
+} from "./RuleConfig";
 
 type BaseDiagnostic = {
   id: string;
@@ -71,9 +52,16 @@ export type Diagnostic<R extends RuleId = RuleId> = R extends SyncRuleId
   ? AsyncDiagnostic<R>
   : never;
 
-export interface Rule<R extends RuleId> {
-  init?(): void;
-  checkFixed(lintable: Lintable): Diagnostic<R>[];
-}
+export abstract class AbstractAsyncDiagnostic<
+  R extends AsyncRuleId = AsyncRuleId
+> implements BaseDiagnostic
+{
+  readonly type = "async";
+  abstract readonly rule: R;
+  abstract get hasViolation(): boolean | "pending";
+  abstract readonly id: string;
+  abstract readonly lintable: Lintable;
+  abstract fix?(): void;
 
-export interface AsyncRule<R extends AsyncRuleId> extends Rule<R> {}
+  update(lintable: Lintable) {}
+}

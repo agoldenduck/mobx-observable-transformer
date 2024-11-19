@@ -1,11 +1,14 @@
 import { action, computed, observable, when } from "mobx";
 import { fromPromise, IPromiseBasedObservable } from "mobx-utils";
-import { document } from "../Document";
+import { document } from "../types/Document";
 import {
   ExpensivePageTaskManager,
   PageTask,
 } from "../ExpensivePageTaskManager";
-import { AsyncDiagnostic, AsyncRule, Lintable } from "./Rule";
+import { AsyncRule } from "../types/Rule";
+import { AbstractAsyncDiagnostic } from "../types/Diagnostic";
+import { Lintable } from "../types/Lintable";
+import { RuleInfo } from "../types/RuleConfig";
 
 export type InsufficientTextContrastId = "insufficient_text_contrast";
 
@@ -28,9 +31,9 @@ export type InsufficientTextContrastInfo = {
 };
 
 class InsufficientTextContrastDiagnostic
-  implements AsyncDiagnostic<InsufficientTextContrastId>
+  extends AbstractAsyncDiagnostic<InsufficientTextContrastId>
+  implements RuleInfo<InsufficientTextContrastId>
 {
-  readonly type = "async";
   readonly rule = "insufficient_text_contrast";
   @observable.struct
   currentTargetColors: readonly number[] | undefined;
@@ -39,8 +42,6 @@ class InsufficientTextContrastDiagnostic
   @observable
   fix: ((newColor?: string) => void) | undefined;
 
-  @observable.ref
-  private calculated: boolean = false;
   @observable
   private fromPromise:
     | IPromiseBasedObservable<{
@@ -62,10 +63,8 @@ class InsufficientTextContrastDiagnostic
       currentTargetColors?: readonly number[];
     }>
   ) {
-    when(
-      () => pageTask.state === "fulfilled",
-      () => this.calculate()
-    );
+    super();
+    pageTask.then(() => this.calculate());
   }
 
   @computed
@@ -84,7 +83,6 @@ class InsufficientTextContrastDiagnostic
     this.fromPromise = fromPromise(this.lint());
     this.fromPromise.then(
       action(({ hasViolation, fix, getCandidates, currentTargetColors }) => {
-        this.calculated = true;
         if (hasViolation) {
           this.fix = fix;
           this.getCandidates = getCandidates;

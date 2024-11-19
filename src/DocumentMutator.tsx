@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite";
 import { action } from "mobx";
 import { useRef } from "react";
-import { Document } from "./Document";
+import { Document } from "./types/Document";
 
 type DocumentMutatorProps = {
   document: Document;

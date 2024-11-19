@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import { Document } from "./Document";
+import { Document } from "./types/Document";
 
 type DocumentObserverProps = {
   document: Document;

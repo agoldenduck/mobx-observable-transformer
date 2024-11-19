@@ -1,27 +1,8 @@
 import { comparer, computed, observable, ObservableMap, reaction } from "mobx";
 import { fromPromise, IPromiseBasedObservable } from "mobx-utils";
-import { Page } from "./Document";
+import { Page } from "./types/Document";
 
-export class PageTask {
-  private _promise: IPromiseBasedObservable<string> | undefined;
-  constructor(readonly pageState: string) {}
-
-  set promise(promise: Promise<string>) {
-    this._promise = fromPromise(promise, this._promise);
-  }
-
-  @computed
-  get state() {
-    return this._promise?.state ?? "errored";
-  }
-
-  @computed
-  get result(): string | undefined {
-    return this._promise?.case({
-      fulfilled: (result) => result,
-    });
-  }
-}
+export type PageTask = IPromiseBasedObservable<string>;
 
 export class ExpensivePageTaskManager {
   pageTaskMap = new ObservableMap<Page, PageTask>();
@@ -45,11 +26,10 @@ export class ExpensivePageTaskManager {
         resolve(pageState.repeat(2));
       }, 5000);
     });
-    const pageTask = this.pageTaskMap.get(page) ?? new PageTask(pageState);
 
-    pageTask.promise = promise;
+    let oldPromise = this.pageTaskMap.get(page);
 
-    this.pageTaskMap.set(page, pageTask);
+    this.pageTaskMap.set(page, fromPromise(promise, oldPromise));
   }
 
   getPageTaskResult(page: Page): PageTask {

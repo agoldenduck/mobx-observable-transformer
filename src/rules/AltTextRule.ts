@@ -1,4 +1,6 @@
-import { Lintable, Rule, SyncDiagnostic } from "./Rule";
+import { SyncDiagnostic } from "../types/Diagnostic";
+import { Lintable } from "../types/Lintable";
+import { Rule } from "../types/Rule";
 
 export type AltTextId = "alt_text";
 export type AltTextInfo = {

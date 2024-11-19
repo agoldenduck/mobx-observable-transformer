@@ -1,4 +1,6 @@
-import { AsyncDiagnostic, AsyncRule, Lintable, Rule } from "./Rule";
+import { AsyncDiagnostic } from "../types/Diagnostic";
+import { Lintable } from "../types/Lintable";
+import { AsyncRule } from "../types/Rule";
 
 export type ImageProcessingDangerZoneId = "image_processing_danger_zone";
 
