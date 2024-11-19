@@ -1,16 +1,11 @@
 import { computed, observable } from "mobx";
 import { computedFn, createTransformer } from "mobx-utils";
-import { document, Document, Element, Page } from "./Document";
 import { ContrastRule } from "./rules/ContrastRule";
-import {
-  Diagnostic,
-  Lintable,
-  LintableElement,
-  LintablePage,
-  Rule,
-  RuleConfig,
-  RuleId,
-} from "./rules/Rule";
+import { Diagnostic } from "./types/Diagnostic";
+import { document, Document, Element, Page } from "./types/Document";
+import { Rule } from "./types/Rule";
+import { LintablePage, LintableElement, Lintable } from "./types/Lintable";
+import { RuleId, RuleConfig } from "./types/RuleConfig";
 
 export class AsyncDocumentTransformer {
   @observable.deep

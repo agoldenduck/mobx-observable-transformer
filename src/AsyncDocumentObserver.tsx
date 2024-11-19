@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import { Diagnostic } from "./rules/Rule";
+import { Diagnostic } from "./types/Diagnostic";
 
 type AsyncDocumentObserverProps = {
   diagnostics: Diagnostic[][];
