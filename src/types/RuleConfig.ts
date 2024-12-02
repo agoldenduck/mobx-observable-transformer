@@ -1,11 +1,9 @@
-import { AltTextConfig } from "../rules/AltTextRule";
-import { InsufficientTextContrastConfig } from "../rules/ContrastRule";
-import { ImageProcessingDangerZoneConfig } from "../rules/DangerZoneRule";
+import { AnAsyncConfig } from "../rules/AnAsyncRule";
+import { ASyncConfig } from "../rules/ASyncRule";
+import { AnotherAsyncZoneConfig } from "../rules/AnotherAsyncRule";
 
-export type SyncRuleConfig = AltTextConfig;
-export type AsyncRuleConfig =
-  | InsufficientTextContrastConfig
-  | ImageProcessingDangerZoneConfig;
+export type SyncRuleConfig = ASyncConfig;
+export type AsyncRuleConfig = AnAsyncConfig | AnotherAsyncZoneConfig;
 export type RuleConfig = AsyncRuleConfig | SyncRuleConfig;
 
 export type RuleId = RuleConfig["rule"];

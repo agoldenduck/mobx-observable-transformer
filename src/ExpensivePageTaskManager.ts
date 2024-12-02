@@ -1,4 +1,4 @@
-import { comparer, computed, observable, ObservableMap, reaction } from "mobx";
+import { comparer, ObservableMap, reaction } from "mobx";
 import { fromPromise, IPromiseBasedObservable } from "mobx-utils";
 import { Page } from "./types/Document";
 

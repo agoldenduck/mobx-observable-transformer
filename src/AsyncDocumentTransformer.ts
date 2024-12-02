@@ -1,6 +1,6 @@
 import { computed, observable } from "mobx";
 import { computedFn, createTransformer } from "mobx-utils";
-import { ContrastRule } from "./rules/ContrastRule";
+import { AnAsyncRule } from "./rules/AnAsyncRule";
 import { Diagnostic } from "./types/Diagnostic";
 import { document, Document, Element, Page } from "./types/Document";
 import { Rule } from "./types/Rule";
@@ -18,7 +18,7 @@ export class AsyncDocumentTransformer {
 
   startTransforming(ruleConfigs?: RuleConfig[]) {
     this.document = document;
-    this.rules = [new ContrastRule()];
+    this.rules = [new AnAsyncRule()];
     this.rules.forEach((rule) => rule.init?.());
   }
 
