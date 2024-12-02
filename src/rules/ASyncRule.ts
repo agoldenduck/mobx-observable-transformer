@@ -2,23 +2,23 @@ import { SyncDiagnostic } from "../types/Diagnostic";
 import { Lintable } from "../types/Lintable";
 import { Rule } from "../types/Rule";
 
-export type AltTextId = "alt_text";
-export type AltTextInfo = {
-  altTextable: {};
+export type ASyncId = "a_sync_rule";
+export type ASyncInfo = {
+  Syncable: {};
 };
-export type AltTextConfig = {
-  rule: AltTextId;
-  info: AltTextInfo;
+export type ASyncConfig = {
+  rule: ASyncId;
+  info: ASyncInfo;
 };
 
-export class AltTextRule implements Rule<AltTextId> {
+export class ASyncRule implements Rule<ASyncId> {
   checkFixed(lintable: Lintable) {
     const diagnostic: SyncDiagnostic = {
       type: "sync",
       lintable,
-      id: "contrast_awesome",
-      rule: "alt_text",
-      altTextable: {},
+      id: "a_sync_id",
+      rule: "a_sync_rule",
+      Syncable: {},
     };
     return [diagnostic];
   }

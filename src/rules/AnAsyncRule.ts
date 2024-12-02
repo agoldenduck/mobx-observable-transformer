@@ -1,4 +1,4 @@
-import { action, computed, observable, when } from "mobx";
+import { action, computed, observable } from "mobx";
 import { fromPromise, IPromiseBasedObservable } from "mobx-utils";
 import { document } from "../types/Document";
 import {
@@ -10,14 +10,14 @@ import { AbstractAsyncDiagnostic } from "../types/Diagnostic";
 import { Lintable } from "../types/Lintable";
 import { RuleInfo } from "../types/RuleConfig";
 
-export type InsufficientTextContrastId = "insufficient_text_contrast";
+export type AnAsyncId = "an_async_rule";
 
-export type InsufficientTextContrastConfig = {
-  rule: InsufficientTextContrastId;
-  info: InsufficientTextContrastInfo;
+export type AnAsyncConfig = {
+  rule: AnAsyncId;
+  info: AnAsyncInfo;
 };
 
-export type InsufficientTextContrastInfo = {
+export type AnAsyncInfo = {
   // Colors associated with the issue target, providing them directly as not much extra computing needed.
   currentTargetColors?: readonly number[];
   // Candidates array are not provided directly due to computing them is expansive and
@@ -30,11 +30,11 @@ export type InsufficientTextContrastInfo = {
   updateTargetColor?(newColor: string): void;
 };
 
-class InsufficientTextContrastDiagnostic
-  extends AbstractAsyncDiagnostic<InsufficientTextContrastId>
-  implements RuleInfo<InsufficientTextContrastId>
+class AnAsyncDiagnostic
+  extends AbstractAsyncDiagnostic<AnAsyncId>
+  implements RuleInfo<AnAsyncId>
 {
-  readonly rule = "insufficient_text_contrast";
+  readonly rule = "an_async_rule";
   @observable.struct
   currentTargetColors: readonly number[] | undefined;
   @observable
@@ -93,7 +93,7 @@ class InsufficientTextContrastDiagnostic
   }
 }
 
-export class ContrastRule implements AsyncRule<InsufficientTextContrastId> {
+export class AnAsyncRule implements AsyncRule<AnAsyncId> {
   private readonly pageTaskManager = new ExpensivePageTaskManager();
   init(): void {
     document.pages.map((page) => {
@@ -108,7 +108,7 @@ export class ContrastRule implements AsyncRule<InsufficientTextContrastId> {
     const resolved: {
       fix?: () => void;
       hasViolation: boolean;
-    } & InsufficientTextContrastInfo = {
+    } & AnAsyncInfo = {
       fix: () => {},
       hasViolation: lintable.element.data.includes("1"),
       currentTargetColors: [0, 1, 2],
@@ -119,7 +119,7 @@ export class ContrastRule implements AsyncRule<InsufficientTextContrastId> {
         {
           fix?: () => void;
           hasViolation: boolean;
-        } & InsufficientTextContrastInfo
+        } & AnAsyncInfo
       >((resolve) => {
         setTimeout(() => resolve(resolved), 2000);
       });
@@ -127,12 +127,7 @@ export class ContrastRule implements AsyncRule<InsufficientTextContrastId> {
     const pageTask = this.pageTaskManager.getPageTaskResult(lintable.page);
 
     const diagnostic = observable(
-      new InsufficientTextContrastDiagnostic(
-        "contrast_awesome",
-        lintable,
-        pageTask,
-        promise
-      )
+      new AnAsyncDiagnostic("an_async_id", lintable, pageTask, promise)
     );
     return [diagnostic];
   }
