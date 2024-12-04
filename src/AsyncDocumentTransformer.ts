@@ -6,6 +6,8 @@ import { document, Document, Element, Page } from "./types/Document";
 import { Rule } from "./types/Rule";
 import { LintablePage, LintableElement, Lintable } from "./types/Lintable";
 import { RuleId, RuleConfig } from "./types/RuleConfig";
+import { ASyncRule } from "./rules/ASyncRule";
+import { AnotherAsyncRule } from "./rules/AnotherAsyncRule";
 
 export class AsyncDocumentTransformer {
   @observable.deep
@@ -18,7 +20,7 @@ export class AsyncDocumentTransformer {
 
   startTransforming(ruleConfigs?: RuleConfig[]) {
     this.document = document;
-    this.rules = [new AnAsyncRule()];
+    this.rules = [new AnAsyncRule(), new ASyncRule(), new AnotherAsyncRule()];
     this.rules.forEach((rule) => rule.init?.());
   }
 
