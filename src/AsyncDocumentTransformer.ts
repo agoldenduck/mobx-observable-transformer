@@ -1,13 +1,14 @@
 import { computed, observable } from "mobx";
 import { computedFn, createTransformer } from "mobx-utils";
 import { AnAsyncRule } from "./rules/AnAsyncRule";
+import { AnotherAsyncRule } from "./rules/AnotherAsyncRule";
+import { ASyncRule } from "./rules/ASyncRule";
+import { AsyncDiagnostic, isAsyncDiagnostic } from "./types/AsyncDiagnostic";
 import { Diagnostic } from "./types/Diagnostic";
 import { document, Document, Element, Page } from "./types/Document";
 import { Rule } from "./types/Rule";
 import { LintablePage, LintableElement, Lintable } from "./types/Lintable";
 import { RuleId, RuleConfig } from "./types/RuleConfig";
-import { ASyncRule } from "./rules/ASyncRule";
-import { AnotherAsyncRule } from "./rules/AnotherAsyncRule";
 
 export class AsyncDocumentTransformer {
   @observable.deep
@@ -90,7 +91,7 @@ function exists<T>(t: T | undefined | null): t is T {
 
 type LintNode = {
   lintable: Lintable;
-  diagnostics: Diagnostic[];
+  diagnostics: (Diagnostic | AsyncDiagnostic)[];
   children?: LintNode[];
 };
 
@@ -100,7 +101,14 @@ type LintNode = {
  */
 export function lintNodeToDiagnostics(node: LintNode): Diagnostic[] {
   return flattenLintNode(node).flatMap((n) =>
-    n.diagnostics.filter((d) => d.type !== "async" || d.hasViolation === true)
+    n.diagnostics
+      .map((d) => {
+        if (isAsyncDiagnostic(d)) {
+          return d.state === "fulfilled" ? d.value : undefined;
+        }
+        return d;
+      })
+      .filter(exists)
   );
 }
 
@@ -109,9 +117,11 @@ export function lintNodeToDiagnostics(node: LintNode): Diagnostic[] {
  */
 export function lintNodeToPendingDiagnostics(node: LintNode): Diagnostic[] {
   return flattenLintNode(node).flatMap((n) =>
-    n.diagnostics.filter(
-      (d) => d.type === "async" && d.hasViolation === "pending"
-    )
+    n.diagnostics
+      .map((d) =>
+        isAsyncDiagnostic(d) && d.state === "pending" ? d.value : undefined
+      )
+      .filter(exists)
   );
 }
 
