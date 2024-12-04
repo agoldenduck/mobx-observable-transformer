@@ -1,14 +1,9 @@
-import { action, computed, observable } from "mobx";
-import { fromPromise, IPromiseBasedObservable } from "mobx-utils";
 import { document } from "../types/Document";
-import {
-  ExpensivePageTaskManager,
-  PageTask,
-} from "../ExpensivePageTaskManager";
-import { AsyncRule } from "../types/Rule";
-import { AbstractAsyncDiagnostic } from "../types/Diagnostic";
+import { ExpensivePageTaskManager } from "../ExpensivePageTaskManager";
+import { Rule } from "../types/Rule";
+import { Diagnostic } from "../types/Diagnostic";
 import { Lintable } from "../types/Lintable";
-import { RuleInfo } from "../types/RuleConfig";
+import { toAsyncDiagnostic } from "../types/AsyncDiagnostic";
 
 export type AnAsyncId = "an_async_rule";
 
@@ -30,70 +25,7 @@ export type AnAsyncInfo = {
   updateTargetColor?(newColor: string): void;
 };
 
-class AnAsyncDiagnostic
-  extends AbstractAsyncDiagnostic<AnAsyncId>
-  implements RuleInfo<AnAsyncId>
-{
-  readonly rule = "an_async_rule";
-  @observable.struct
-  currentTargetColors: readonly number[] | undefined;
-  @observable
-  getCandidates: (() => number[]) | undefined;
-  @observable
-  fix: ((newColor?: string) => void) | undefined;
-
-  @observable
-  private fromPromise:
-    | IPromiseBasedObservable<{
-        hasViolation: boolean;
-        fix?: (newColor?: string) => void;
-        getCandidates?: () => number[];
-        currentTargetColors?: readonly number[];
-      }>
-    | undefined;
-
-  constructor(
-    readonly id: string,
-    readonly lintable: Lintable,
-    private readonly pageTask: PageTask,
-    private readonly lint: () => Promise<{
-      hasViolation: boolean;
-      fix?: (newColor?: string) => void;
-      getCandidates?: () => number[];
-      currentTargetColors?: readonly number[];
-    }>
-  ) {
-    super();
-    pageTask.then(() => this.calculate());
-  }
-
-  @computed
-  get hasViolation() {
-    if (
-      this.pageTask.state !== "fulfilled" ||
-      this.fromPromise?.state !== "fulfilled"
-    ) {
-      return "pending";
-    }
-    return this.fromPromise.value.hasViolation;
-  }
-
-  @action
-  private async calculate() {
-    this.fromPromise = fromPromise(this.lint());
-    this.fromPromise.then(
-      action(({ hasViolation, fix, getCandidates, currentTargetColors }) => {
-        if (hasViolation) {
-          this.fix = fix;
-          this.getCandidates = getCandidates;
-          this.currentTargetColors = currentTargetColors;
-        }
-      })
-    );
-  }
-}
-
-export class AnAsyncRule implements AsyncRule<AnAsyncId> {
+export class AnAsyncRule implements Rule<AnAsyncId> {
   private readonly pageTaskManager = new ExpensivePageTaskManager();
   init(): void {
     document.pages.map((page) => {
@@ -105,30 +37,34 @@ export class AnAsyncRule implements AsyncRule<AnAsyncId> {
     if (lintable.type === "page") {
       return [];
     }
-    const resolved: {
-      fix?: () => void;
-      hasViolation: boolean;
-    } & AnAsyncInfo = {
+    const resolved: Diagnostic<AnAsyncId> = {
+      rule: "an_async_rule",
+      id: "an_async_id",
+      lintable,
       fix: () => {},
-      hasViolation: lintable.element.data.includes("1"),
       currentTargetColors: [0, 1, 2],
       getCandidates: () => [3, 4, 5],
     };
     const promise = () =>
-      new Promise<
-        {
-          fix?: () => void;
-          hasViolation: boolean;
-        } & AnAsyncInfo
-      >((resolve) => {
-        setTimeout(() => resolve(resolved), 2000);
+      new Promise<Diagnostic<AnAsyncId>>((resolve, reject) => {
+        setTimeout(() => {
+          if (lintable.element.data.includes("1")) {
+            resolve(resolved);
+          } else {
+            reject();
+          }
+        }, 2000);
       });
 
     const pageTask = this.pageTaskManager.getPageTaskResult(lintable.page);
 
-    const diagnostic = observable(
-      new AnAsyncDiagnostic("an_async_id", lintable, pageTask, promise)
-    );
+    const diagnostic = toAsyncDiagnostic({
+      rule: "an_async_rule",
+      id: "an_async_id",
+      lintable,
+      promise: pageTask.then(() => promise()),
+    });
+
     return [diagnostic];
   }
 }

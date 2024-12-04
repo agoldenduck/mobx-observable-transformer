@@ -25,9 +25,6 @@ export const AsyncDocumentObserver = observer(
                 ? diagnostic.lintable.element.data + ": "
                 : ""}
               {diagnostic.rule}
-              {diagnostic.type === "async"
-                ? ` (${diagnostic.hasViolation})`
-                : ""}
             </p>
           ))
         )}
