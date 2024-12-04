@@ -1,9 +1,9 @@
 import { AnAsyncConfig } from "../rules/AnAsyncRule";
 import { ASyncConfig } from "../rules/ASyncRule";
-import { AnotherAsyncZoneConfig } from "../rules/AnotherAsyncRule";
+import { AnotherAsyncConfig } from "../rules/AnotherAsyncRule";
 
 export type SyncRuleConfig = ASyncConfig;
-export type AsyncRuleConfig = AnAsyncConfig | AnotherAsyncZoneConfig;
+export type AsyncRuleConfig = AnAsyncConfig | AnotherAsyncConfig;
 export type RuleConfig = AsyncRuleConfig | SyncRuleConfig;
 
 export type RuleId = RuleConfig["rule"];

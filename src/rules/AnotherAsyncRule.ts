@@ -2,24 +2,39 @@ import { AsyncDiagnostic } from "../types/Diagnostic";
 import { Lintable } from "../types/Lintable";
 import { AsyncRule } from "../types/Rule";
 
-export type AnotherAsyncZoneId = "another_async_rule";
+export type AnotherAsyncId = "another_async_rule";
 
-export type AnotherAsyncZoneInfo = {
+export type AnotherAsyncInfo = {
   components: {}[];
 };
 
-export type AnotherAsyncZoneProps = {
+export type AnotherAsyncProps = {
   dangerZoneSvgPath: string;
 };
 
-export type AnotherAsyncZoneConfig = {
-  rule: AnotherAsyncZoneId;
-  info: AnotherAsyncZoneInfo;
-  props: AnotherAsyncZoneProps;
+export type AnotherAsyncConfig = {
+  rule: AnotherAsyncId;
+  info: AnotherAsyncInfo;
+  props: AnotherAsyncProps;
 };
 
-export class AnotherAsyncZoneRule implements AsyncRule<AnotherAsyncZoneId> {
-  checkFixed(lintable: Lintable): AsyncDiagnostic<AnotherAsyncZoneId>[] {
-    throw new Error("Method not implemented.");
+export class AnotherAsyncRule implements AsyncRule<AnotherAsyncId> {
+  checkFixed(lintable: Lintable): AsyncDiagnostic<AnotherAsyncId>[] {
+    if (lintable.type === "page") {
+      return [];
+    }
+
+    if (lintable.element.data.includes("a")) {
+      const diagnostic: AsyncDiagnostic<AnotherAsyncId> = {
+        type: "async",
+        lintable,
+        id: "another_async_id",
+        rule: "another_async_rule",
+        hasViolation: true,
+        components: [],
+      };
+      return [diagnostic];
+    }
+    return [];
   }
 }
