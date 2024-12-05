@@ -1,5 +1,5 @@
-import { observer } from "mobx-react-lite";
 import { action } from "mobx";
+import { observer } from "mobx-react-lite";
 import { useRef } from "react";
 import { Document } from "./types/Document";
 
