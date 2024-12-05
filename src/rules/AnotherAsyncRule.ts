@@ -1,6 +1,6 @@
 import { Diagnostic } from "../types/Diagnostic";
 import { Lintable } from "../types/Lintable";
-import { Rule } from "../types/Rule";
+import { BaseRule } from "../types/Rule";
 
 export type AnotherAsyncId = "another_async_rule";
 
@@ -18,8 +18,8 @@ export type AnotherAsyncConfig = {
   props: AnotherAsyncProps;
 };
 
-export class AnotherAsyncRule implements Rule<AnotherAsyncId> {
-  checkFixed(lintable: Lintable): Diagnostic<AnotherAsyncId>[] {
+export class AnotherAsyncRule extends BaseRule<AnotherAsyncId> {
+  check(lintable: Lintable): Diagnostic<AnotherAsyncId>[] {
     if (lintable.type === "page") {
       return [];
     }

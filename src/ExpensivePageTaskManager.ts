@@ -21,10 +21,10 @@ export class ExpensivePageTaskManager {
 
   private triggerExpensivePageTask(page: Page) {
     const pageState = JSON.stringify(page);
-    const promise = new Promise<string>((resolve, reject) => {
+    const promise = new Promise<string>((resolve) => {
       setTimeout(() => {
         resolve(pageState.repeat(2));
-      }, 5000);
+      }, Math.random() * 5000);
     });
 
     let oldPromise = this.pageTaskMap.get(page);

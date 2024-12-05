@@ -1,9 +1,9 @@
-import { document } from "../types/Document";
 import { ExpensivePageTaskManager } from "../ExpensivePageTaskManager";
-import { Rule } from "../types/Rule";
 import { Diagnostic } from "../types/Diagnostic";
+import { document } from "../types/Document";
 import { Lintable } from "../types/Lintable";
-import { toAsyncDiagnostic } from "../types/AsyncDiagnostic";
+import { toLintState } from "../types/LintState";
+import { BaseRule } from "../types/Rule";
 
 export type AnAsyncId = "an_async_rule";
 
@@ -25,7 +25,7 @@ export type AnAsyncInfo = {
   updateTargetColor?(newColor: string): void;
 };
 
-export class AnAsyncRule implements Rule<AnAsyncId> {
+export class AnAsyncRule extends BaseRule<AnAsyncId> {
   private readonly pageTaskManager = new ExpensivePageTaskManager();
   init(): void {
     document.pages.map((page) => {
@@ -33,7 +33,7 @@ export class AnAsyncRule implements Rule<AnAsyncId> {
     });
   }
 
-  checkFixed(lintable: Lintable) {
+  checkAsync(lintable: Lintable) {
     if (lintable.type === "page") {
       return [];
     }
@@ -53,12 +53,12 @@ export class AnAsyncRule implements Rule<AnAsyncId> {
           } else {
             reject();
           }
-        }, 2000);
+        }, Math.random() * 2000);
       });
 
     const pageTask = this.pageTaskManager.getPageTaskResult(lintable.page);
 
-    const diagnostic = toAsyncDiagnostic({
+    const diagnostic = toLintState({
       rule: "an_async_rule",
       id: "an_async_id",
       lintable,

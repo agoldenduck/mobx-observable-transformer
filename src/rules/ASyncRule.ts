@@ -1,6 +1,6 @@
 import { Diagnostic } from "../types/Diagnostic";
 import { Lintable } from "../types/Lintable";
-import { Rule } from "../types/Rule";
+import { BaseRule } from "../types/Rule";
 
 export type ASyncId = "a_sync_rule";
 export type ASyncInfo = {
@@ -11,8 +11,8 @@ export type ASyncConfig = {
   info: ASyncInfo;
 };
 
-export class ASyncRule implements Rule<ASyncId> {
-  checkFixed(lintable: Lintable): Diagnostic<ASyncId>[] {
+export class ASyncRule extends BaseRule<ASyncId> {
+  check(lintable: Lintable): Diagnostic<ASyncId>[] {
     if (lintable.type === "page") {
       return [];
     }

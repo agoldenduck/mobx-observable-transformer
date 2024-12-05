@@ -1,6 +1,6 @@
 import { AnAsyncConfig } from "../rules/AnAsyncRule";
-import { ASyncConfig } from "../rules/ASyncRule";
 import { AnotherAsyncConfig } from "../rules/AnotherAsyncRule";
+import { ASyncConfig } from "../rules/ASyncRule";
 
 export type RuleConfig = AnAsyncConfig | AnotherAsyncConfig | ASyncConfig;
 

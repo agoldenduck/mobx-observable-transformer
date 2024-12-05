@@ -3,11 +3,16 @@ import { computedFn, createTransformer } from "mobx-utils";
 import { AnAsyncRule } from "./rules/AnAsyncRule";
 import { AnotherAsyncRule } from "./rules/AnotherAsyncRule";
 import { ASyncRule } from "./rules/ASyncRule";
-import { AsyncDiagnostic, isAsyncDiagnostic } from "./types/AsyncDiagnostic";
 import { Diagnostic } from "./types/Diagnostic";
 import { document, Document, Element, Page } from "./types/Document";
-import { Rule } from "./types/Rule";
 import { LintablePage, LintableElement, Lintable } from "./types/Lintable";
+import {
+  LINT_STATE,
+  LintPending,
+  LintState,
+  LintViolation,
+} from "./types/LintState";
+import { BaseRule } from "./types/Rule";
 import { RuleId, RuleConfig } from "./types/RuleConfig";
 
 export class AsyncDocumentTransformer {
@@ -17,7 +22,7 @@ export class AsyncDocumentTransformer {
   };
 
   @observable.struct
-  private rules: Rule<RuleId>[] = [];
+  private rules: BaseRule<RuleId>[] = [];
 
   startTransforming(ruleConfigs?: RuleConfig[]) {
     this.document = document;
@@ -57,8 +62,8 @@ export class AsyncDocumentTransformer {
 
       return {
         lintable,
-        diagnostics: this.rules.flatMap((rule) =>
-          rule.checkFixed(lintable).filter(exists)
+        lintStates: this.rules.flatMap((rule) =>
+          rule.getLintStates(lintable).filter(exists)
         ),
         children: page.elements.map((element) =>
           this._transformElement(page, element)
@@ -77,8 +82,8 @@ export class AsyncDocumentTransformer {
 
       return {
         lintable,
-        diagnostics: this.rules.flatMap((rule) =>
-          rule.checkFixed(lintable).filter(exists)
+        lintStates: this.rules.flatMap((rule) =>
+          rule.getLintStates(lintable).filter(exists)
         ),
       };
     }
@@ -91,7 +96,7 @@ function exists<T>(t: T | undefined | null): t is T {
 
 type LintNode = {
   lintable: Lintable;
-  diagnostics: (Diagnostic | AsyncDiagnostic)[];
+  lintStates: LintState[];
   children?: LintNode[];
 };
 
@@ -101,14 +106,9 @@ type LintNode = {
  */
 export function lintNodeToDiagnostics(node: LintNode): Diagnostic[] {
   return flattenLintNode(node).flatMap((n) =>
-    n.diagnostics
-      .map((d) => {
-        if (isAsyncDiagnostic(d)) {
-          return d.state === "fulfilled" ? d.value : undefined;
-        }
-        return d;
-      })
-      .filter(exists)
+    n.lintStates
+      .filter(lintStateIsLintViolation)
+      .map((lintState) => lintState.value)
   );
 }
 
@@ -117,12 +117,22 @@ export function lintNodeToDiagnostics(node: LintNode): Diagnostic[] {
  */
 export function lintNodeToPendingDiagnostics(node: LintNode): Diagnostic[] {
   return flattenLintNode(node).flatMap((n) =>
-    n.diagnostics
-      .map((d) =>
-        isAsyncDiagnostic(d) && d.state === "pending" ? d.value : undefined
-      )
-      .filter(exists)
+    n.lintStates
+      .filter(lintStateIsLintPending)
+      .map((lintState) => lintState.value)
   );
+}
+
+function lintStateIsLintViolation(
+  lintState: LintState
+): lintState is LintViolation {
+  return lintState.state === LINT_STATE.HAS_VIOLATION;
+}
+
+function lintStateIsLintPending(
+  lintState: LintState
+): lintState is LintPending {
+  return lintState.state === LINT_STATE.PENDING;
 }
 
 /**
